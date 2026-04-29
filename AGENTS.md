@@ -46,10 +46,10 @@
 預設產品決策如下：
 
 1. App 本身只有一個主 process。
-2. 所有便利貼資料由主視窗或 backend 統一管理。
-3. 每張便利貼在前端以可拖曳 floating note component 呈現；MVP 不強制每張便利貼都是獨立 native window。
-4. 若使用者要求「每張便利貼像桌面視窗一樣獨立存在」，才改成每張便利貼建立獨立 Tauri WebviewWindow。
-5. 拖曳位置以螢幕座標或 app viewport 座標保存；必須處理多螢幕、解析度改變與超出可視範圍的情況。
+2. 所有便利貼資料由前端 Pinia store 搭配 Tauri Store plugin 統一管理。
+3. 目前每張便利貼預設就是獨立 Tauri `WebviewWindow`，主視窗只作為控制台與設定面板。
+4. 每張便利貼 window label 必須穩定且可由 note id 推導，格式為 `note-${id}`。
+5. 拖曳與 resize 目前以 native window 事件為主，持久化採用邏輯座標與邏輯尺寸；實作時必須處理 DPI scaling。
 6. 預設啟用自動保存，不需要使用者手動按儲存。
 7. 開機自動啟動必須是可開關設定，不可強制啟用。
 8. 預設不收集 telemetry。
@@ -77,6 +77,7 @@
 ```ts
 type StickyNote = {
   id: string;
+  title: string;
   content: string;
   x: number;
   y: number;
@@ -116,7 +117,7 @@ type StickyNote = {
 必須支援：
 
 - 使用者可在設定中開啟或關閉「開機自動啟動」。
-- App 啟動後自動載入先前便利貼。
+- App 啟動後自動載入先前便利貼；若 `showOnStartup` 為 `true`，需自動重開所有可見 note windows。
 - 若啟動時發現部分便利貼位置已超出目前螢幕可視區，需自動移回可視範圍。
 - 若已經有 app instance 在執行，第二次啟動應聚焦現有 instance，而不是開另一組便利貼。
 
@@ -124,27 +125,30 @@ type StickyNote = {
 
 ### 視窗與拖曳
 
-MVP 可以採用單一透明或一般主視窗承載多張便利貼。如果之後改成 native multi-window，需遵守以下原則：
+目前專案已採用 native multi-window 方案，需遵守以下原則：
 
-- 每張便利貼的 native window label 必須穩定且可由 note id 推導，例如 `note-${id}`。
+- 主視窗 `main` 是控制台；每張便利貼都是獨立 `WebviewWindow`。
+- 每張便利貼 window label 必須穩定且可由 note id 推導，例如 `note-${id}`。
 - 建立 window 前先檢查是否已存在。
 - 每張 window 的位置與大小必須由 note state 還原。
-- 關閉單張便利貼 window 不代表刪除資料，除非 UI 明確表示「刪除」。
+- 關閉單張便利貼 window 不代表刪除資料；目前關閉行為應轉成隱藏。
 - 避免同一張 note 產生重複 window。
 
-拖曳實作需注意：
+目前拖曳/編輯互動規則：
 
-- 拖曳只應由便利貼 header 或明確 drag handle 觸發。
-- 編輯文字時不能誤觸拖曳。
-- 拖曳結束後再保存位置，不要在每個 mousemove 同步寫入磁碟。
-- 多螢幕環境需避免座標錯亂。
+- 整張 note 預設可拖曳。
+- 標題與內容區域雙擊才進入編輯狀態。
+- 進入編輯狀態後，對應輸入區不得再觸發拖曳。
+- note 右下角保留 native resize drag handle。
+- 拖曳與 resize 的座標同步應使用邏輯座標/尺寸，不可直接把 physical 值寫回 store。
+- 拖曳結束或 resize 事件後再 debounce 保存，不要在每個微小變化都同步寫入磁碟。
 
 ### UI/UX
 
 基本 UI 要求：
 
 - 便利貼外觀簡潔，接近紙張或卡片。
-- 每張便利貼有 header/toolbar，但不要過度佔空間。
+- 每張便利貼有 header；設定操作目前收在右上角 `...` 按鈕，點擊後於 header 下方 toggle 一條設定列。
 - 支援快捷新增。
 - 支援鍵盤輸入與常見快捷鍵。
 - 刪除前若不可復原，必須確認。
@@ -203,12 +207,10 @@ const defaultSettings: AppSettings = {
 │   │   ├── router.ts
 │   │   └── providers.ts
 │   ├── components/
+│   │   ├── DesktopNoteWindow/
+│   │   │   └── DesktopNoteWindow.vue
 │   │   ├── StickyNote/
-│   │   │   ├── StickyNote.vue
-│   │   │   ├── StickyNoteToolbar.vue
-│   │   │   └── sticky-note.css
-│   │   ├── NoteCanvas/
-│   │   │   └── NoteCanvas.vue
+│   │   │   └── StickyNoteToolbar.vue
 │   │   └── SettingsPanel/
 │   │       └── SettingsPanel.vue
 │   ├── features/
@@ -216,7 +218,9 @@ const defaultSettings: AppSettings = {
 │   │   │   ├── notesStore.ts
 │   │   │   ├── notesRepository.ts
 │   │   │   ├── notesTypes.ts
-│   │   │   └── notesPersistence.ts
+│   │   │   ├── notesPersistence.ts
+│   │   │   ├── notesEvents.ts
+│   │   │   └── noteWindow.ts
 │   │   └── settings/
 │   │       ├── settingsStore.ts
 │   │       └── settingsRepository.ts
@@ -255,12 +259,22 @@ const defaultSettings: AppSettings = {
 pnpm install
 pnpm dev
 pnpm tauri dev
-pnpm build
-pnpm tauri build
+pnpm dev:tauri-safe
 pnpm lint
 pnpm test
 pnpm typecheck
 ```
+
+目前在 Windows 開發時，優先使用：
+
+```bash
+pnpm dev:tauri-safe
+```
+
+原因：
+
+- 會把 `CARGO_TARGET_DIR` 放到系統暫存目錄，避免 `tauri dev` 監看 `src-tauri` 時因 target 輸出產生重建循環。
+- 會關閉 incremental、限制單工編譯，降低 Windows 檔案鎖衝突。
 
 Rust 端常用指令：
 
@@ -340,6 +354,7 @@ type PersistedState = {
 - 每次 app 啟動時執行 migration。
 - 寫入前可先保存 `.bak`。
 - 若主檔案讀取失敗，嘗試讀取 backup。
+- `@tauri-apps/plugin-store` v2 應使用 `Store.get(...)` / `Store.load(...)`，不要直接 `new Store(path)`。
 
 ### SQLite 正式版
 
@@ -422,6 +437,8 @@ Codex 在執行任何開發任務時請遵守：
 - 不要新增雲端同步、帳號系統或後端服務，除非使用者明確要求。
 - 不要過度設計 plugin system。
 - 不要把 note content 放進 log。
+- 不要把 Tauri 視窗事件回傳的 physical position / size 直接寫回 persisted state。
+- 不要讓 note window 對自己發出的同步事件做 full reload，避免覆蓋本地剛編輯的 state。
 - 不要假設單螢幕。
 - 不要忽略 Linux window manager 差異。
 - 不要新增大型 UI framework，除非現有專案已採用；Vue 專案可優先使用原生 SFC 與少量自製元件。
@@ -435,6 +452,7 @@ MVP 完成需符合：
 - 使用者可以拖曳便利貼。
 - 使用者可以調整便利貼大小。
 - 使用者可以刪除便利貼。
+- 使用者可以雙擊標題編輯標題。
 - App 重新啟動後，便利貼內容、位置、大小、顏色仍存在。
 - 設定中可開關開機自動啟動。
 - 防止同時開啟多個 instance。
