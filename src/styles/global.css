@@ -420,6 +420,7 @@ p {
   bottom: 0.3rem;
   width: 1.4rem;
   height: 1.4rem;
+  cursor: nwse-resize;
   border-radius: 0.45rem;
   background:
     linear-gradient(135deg, transparent 0 45%, rgba(15, 23, 42, 0.3) 45% 55%, transparent 55% 100%),
