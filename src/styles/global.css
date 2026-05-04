@@ -447,6 +447,57 @@ p {
 .note-color-swatch__fill--sky { background: #bae6fd; }
 .note-color-swatch__fill--lavender { background: #ddd6fe; }
 
+.note-font-size-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.note-font-size-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(15, 23, 42, 0.72);
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.note-font-size-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.18);
+}
+
+.note-font-size-button--sm {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.note-font-size-button--md {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.note-font-size-button--lg {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.note-font-size-button--selected {
+  background: rgba(255, 255, 255, 0.7);
+  color: #0f172a;
+}
+
 .note-settings-header select {
   width: 100%;
   min-width: 0;

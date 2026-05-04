@@ -23,6 +23,14 @@ const colorLabels: Record<StickyNoteColor, string> = {
   lavender: 'Lavender',
 };
 
+const fontSizeLabels: Record<StickyFontSize, string> = {
+  sm: 'Small',
+  md: 'Medium',
+  lg: 'Large',
+};
+
+const fontSizeOptions: StickyFontSize[] = ['sm', 'md', 'lg'];
+
 const toggleColorPicker = () => {
   isColorPickerOpen.value = !isColorPickerOpen.value;
 };
@@ -65,12 +73,18 @@ const selectColor = (color: StickyNoteColor) => {
     </label>
 
     <label class="note-settings-header__field">
-      <span>Text size</span>
-      <select :value="note.fontSize" aria-label="Font size" @change="onFontSizeChange(($event.target as HTMLSelectElement).value as StickyFontSize)">
-        <option value="sm">Small</option>
-        <option value="md">Medium</option>
-        <option value="lg">Large</option>
-      </select>
+      <div class="note-font-size-picker" role="group" aria-label="Note text size">
+        <button
+          v-for="size in fontSizeOptions"
+          :key="size"
+          :aria-label="`Set text size to ${fontSizeLabels[size]}`"
+          :class="['note-font-size-button', `note-font-size-button--${size}`, { 'note-font-size-button--selected': note.fontSize === size }]"
+          type="button"
+          @click="onFontSizeChange(size)"
+        >
+          A
+        </button>
+      </div>
     </label>
 
     <button
