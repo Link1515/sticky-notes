@@ -348,6 +348,15 @@ p {
   background: rgba(239, 68, 68, 0.22);
 }
 
+.note-icon-button--active {
+  background: rgba(15, 23, 42, 0.16);
+  color: #0f172a;
+}
+
+.note-icon-button--active:hover {
+  background: rgba(15, 23, 42, 0.22);
+}
+
 .note-settings-toggle {
   margin-left: auto;
   flex: 0 0 auto;

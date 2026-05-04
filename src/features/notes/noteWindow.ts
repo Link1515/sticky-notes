@@ -160,6 +160,19 @@ export const hideNoteWindow = async (noteId: string) => {
   await windowHandle.hide();
 };
 
+export const setNoteWindowPinned = async (noteId: string, isPinned: boolean) => {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  const windowHandle = await WebviewWindow.getByLabel(getNoteWindowLabel(noteId));
+  if (!windowHandle) {
+    return;
+  }
+
+  await windowHandle.setAlwaysOnTop(isPinned);
+};
+
 export const closeNoteWindow = async (noteId: string) => {
   if (!isTauriRuntime()) {
     return;

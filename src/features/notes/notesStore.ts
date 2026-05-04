@@ -3,7 +3,7 @@ import { createDebouncedTask } from '@/lib/debounce';
 import { getErrorDetail, humanizeError } from '@/lib/errors';
 import { createId } from '@/lib/ids';
 import { loadNotesState, persistNotesState } from '@/features/notes/notesPersistence';
-import { closeNoteWindow, ensureNoteWindowVisible, hideNoteWindow, focusNoteWindow } from '@/features/notes/noteWindow';
+import { closeNoteWindow, ensureNoteWindowVisible, hideNoteWindow, focusNoteWindow, setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { emitNotesChanged } from '@/features/notes/notesEvents';
 import type { StickyNote, StickyNoteColor, StickyFontSize } from '@/features/notes/notesTypes';
 import { useSettingsStore } from '@/features/settings/settingsStore';
@@ -147,7 +147,10 @@ export const useNotesStore = defineStore('notes', {
         this.saveError = error instanceof Error ? error.message : humanizeError('UNKNOWN_ERROR');
       }
     },
-    updateNote(noteId: string, patch: Partial<Pick<StickyNote, 'title' | 'content' | 'color' | 'fontSize' | 'isVisible'>>) {
+    updateNote(
+      noteId: string,
+      patch: Partial<Pick<StickyNote, 'title' | 'content' | 'color' | 'fontSize' | 'isVisible' | 'isPinned'>>,
+    ) {
       const note = this.notes.find((entry) => entry.id === noteId);
       if (!note) {
         return;
@@ -202,6 +205,22 @@ export const useNotesStore = defineStore('notes', {
 
       this.touchNote(note, { zIndex: this.nextZIndex++ });
       this.scheduleSave();
+    },
+    async toggleNotePinned(noteId: string) {
+      const note = this.notes.find((entry) => entry.id === noteId && !entry.deletedAt);
+      if (!note) {
+        return;
+      }
+
+      const nextPinned = !note.isPinned;
+      this.touchNote(note, { isPinned: nextPinned });
+      this.scheduleSave();
+
+      try {
+        await setNoteWindowPinned(noteId, nextPinned);
+      } catch (error) {
+        this.saveError = humanizeError('NOTES_SAVE_FAILED', getErrorDetail(error));
+      }
     },
     deleteNote(noteId: string) {
       const note = this.notes.find((entry) => entry.id === noteId);

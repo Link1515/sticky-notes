@@ -5,6 +5,14 @@ import { clampNoteToViewport } from '@/lib/screenBounds';
 import { mergeSettings, migratePersistedState } from '@/features/notes/notesPersistence';
 import { defaultSettings } from '@/features/settings/settingsTypes';
 
+vi.mock('@/features/notes/noteWindow', () => ({
+  closeNoteWindow: vi.fn(),
+  ensureNoteWindowVisible: vi.fn(),
+  hideNoteWindow: vi.fn(),
+  focusNoteWindow: vi.fn(),
+  setNoteWindowPinned: vi.fn(),
+}));
+
 describe('notes domain', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -60,6 +68,15 @@ describe('notes domain', () => {
     expect(store.visibleNotes[0].id).toBe(second.id);
   });
 
+  it('toggles note pin state', async () => {
+    const store = useNotesStore();
+    store.notes = [createNoteModel('yellow', 260, 220, 1)];
+
+    await store.toggleNotePinned(store.notes[0].id);
+
+    expect(store.notes[0].isPinned).toBe(true);
+  });
+
   it('clamps a note back into the viewport', () => {
     const note = createNoteModel('yellow', 260, 220, 1);
     note.x = 5000;
@@ -90,6 +107,7 @@ describe('notes domain', () => {
     expect(migrated.version).toBe(1);
     expect(migrated.notes).toHaveLength(1);
     expect(migrated.notes[0].title).toBe('Untitled note');
+    expect(migrated.notes[0].isPinned).toBe(false);
     expect(migrated.settings.showOnStartup).toBe(false);
     expect(migrated.settings.defaultNoteWidth).toBe(defaultSettings.defaultNoteWidth);
   });

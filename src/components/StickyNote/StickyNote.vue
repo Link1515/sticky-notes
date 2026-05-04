@@ -2,6 +2,7 @@
 import { MoveDiagonal2 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
+import { setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { noteColors, type StickyFontSize, type StickyNote as StickyNoteModel, type StickyNoteColor } from '@/features/notes/notesTypes';
 import { useNotesStore } from '@/features/notes/notesStore';
 
@@ -72,6 +73,12 @@ const updateFontSize = (fontSize: StickyFontSize) => {
   notesStore.updateNote(props.note.id, { fontSize });
 };
 
+const togglePinned = async () => {
+  const nextPinned = !props.note.isPinned;
+  notesStore.updateNote(props.note.id, { isPinned: nextPinned });
+  await setNoteWindowPinned(props.note.id, nextPinned);
+};
+
 const deleteNote = () => {
   const confirmed = window.confirm('Delete this sticky note?');
   if (confirmed) {
@@ -118,10 +125,13 @@ onBeforeUnmount(() => {
 
     <StickyNoteToolbar
       :colors="noteColors"
+      :is-open="true"
       :note="note"
       :on-color-change="updateColor"
       :on-delete="deleteNote"
       :on-font-size-change="updateFontSize"
+      :on-hide="() => undefined"
+      :on-pin-toggle="togglePinned"
     />
 
     <textarea

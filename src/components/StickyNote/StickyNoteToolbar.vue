@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Check, EyeOff, Trash2 } from 'lucide-vue-next';
+import { Check, EyeOff, Pin, Trash2 } from 'lucide-vue-next';
 import type { StickyFontSize, StickyNote, StickyNoteColor } from '@/features/notes/notesTypes';
 
 const props = defineProps<{
@@ -9,6 +9,7 @@ const props = defineProps<{
   isOpen: boolean;
   onColorChange: (color: StickyNoteColor) => void;
   onFontSizeChange: (size: StickyFontSize) => void;
+  onPinToggle: () => void;
   onHide: () => void;
   onDelete: () => void;
 }>();
@@ -86,6 +87,17 @@ const selectColor = (color: StickyNoteColor) => {
         </button>
       </div>
     </label>
+
+    <button
+      :aria-label="note.isPinned ? 'Unpin note from top' : 'Pin note above all windows'"
+      :aria-pressed="note.isPinned"
+      :class="['note-icon-button', 'note-settings-header__action', note.isPinned ? 'note-icon-button--active' : 'note-icon-button--ghost']"
+      :title="note.isPinned ? 'Pinned on top' : 'Pin on top'"
+      type="button"
+      @click="onPinToggle"
+    >
+      <Pin :size="16" aria-hidden="true" />
+    </button>
 
     <button
       aria-label="Hide note"

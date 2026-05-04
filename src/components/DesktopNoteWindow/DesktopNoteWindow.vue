@@ -4,7 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
 import { listenForNotesChanged } from '@/features/notes/notesEvents';
-import { closeNoteWindow, ensureNoteWindowVisible, focusNoteWindow, isTauriRuntime } from '@/features/notes/noteWindow';
+import { closeNoteWindow, ensureNoteWindowVisible, focusNoteWindow, isTauriRuntime, setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { useNotesStore } from '@/features/notes/notesStore';
 import { noteColors, type StickyFontSize, type StickyNoteColor } from '@/features/notes/notesTypes';
 
@@ -58,6 +58,16 @@ const updateColor = async (color: StickyNoteColor) => {
 
 const updateFontSize = (fontSize: StickyFontSize) => {
   notesStore.updateNote(props.noteId, { fontSize });
+};
+
+const togglePinned = async () => {
+  if (!note.value) {
+    return;
+  }
+
+  const nextPinned = !note.value.isPinned;
+  notesStore.updateNote(props.noteId, { isPinned: nextPinned });
+  await setNoteWindowPinned(props.noteId, nextPinned);
 };
 
 const beginTitleEdit = async () => {
@@ -345,6 +355,7 @@ onBeforeUnmount(() => {
       :on-delete="deleteNote"
       :on-font-size-change="updateFontSize"
       :on-hide="hideCurrentNote"
+      :on-pin-toggle="togglePinned"
     />
 
     <textarea

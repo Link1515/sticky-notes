@@ -32,6 +32,7 @@ export const migratePersistedState = (input: unknown): PersistedState => {
             typeof (note as Partial<StickyNote>).title === 'string' && (note as Partial<StickyNote>).title.trim()
               ? (note as Partial<StickyNote>).title as string
               : 'Untitled note',
+          isPinned: typeof (note as Partial<StickyNote>).isPinned === 'boolean' ? (note as Partial<StickyNote>).isPinned : false,
         }))
       : [],
     settings: mergeSettings(candidate.settings),
