@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { EyeOff, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { Check, EyeOff, Trash2 } from 'lucide-vue-next';
 import type { StickyFontSize, StickyNote, StickyNoteColor } from '@/features/notes/notesTypes';
 
-defineProps<{
+const props = defineProps<{
   note: StickyNote;
   colors: readonly StickyNoteColor[];
   isOpen: boolean;
@@ -11,17 +12,56 @@ defineProps<{
   onHide: () => void;
   onDelete: () => void;
 }>();
+
+const isColorPickerOpen = ref(false);
+
+const colorLabels: Record<StickyNoteColor, string> = {
+  yellow: 'Yellow',
+  mint: 'Mint',
+  peach: 'Peach',
+  sky: 'Sky',
+  lavender: 'Lavender',
+};
+
+const toggleColorPicker = () => {
+  isColorPickerOpen.value = !isColorPickerOpen.value;
+};
+
+const selectColor = (color: StickyNoteColor) => {
+  props.onColorChange(color);
+  isColorPickerOpen.value = false;
+};
 </script>
 
 <template>
   <section v-if="isOpen" class="note-settings-header" @pointerdown.stop>
     <label class="note-settings-header__field">
-      <span>Color</span>
-      <select :value="note.color" aria-label="Note color" @change="onColorChange(($event.target as HTMLSelectElement).value as StickyNoteColor)">
-        <option v-for="color in colors" :key="color" :value="color">
-          {{ color }}
-        </option>
-      </select>
+      <div class="note-color-picker">
+        <button
+          :aria-expanded="isColorPickerOpen"
+          :aria-label="`Current color: ${colorLabels[note.color]}. Choose note color.`"
+          class="note-color-swatch note-color-swatch--current"
+          type="button"
+          @click="toggleColorPicker"
+        >
+          <span :class="['note-color-swatch__fill', `note-color-swatch__fill--${note.color}`]" aria-hidden="true" />
+        </button>
+
+        <div v-if="isColorPickerOpen" class="note-color-picker__menu" role="listbox" aria-label="Note color options">
+          <button
+            v-for="color in colors"
+            :key="color"
+            :aria-label="`Set note color to ${colorLabels[color]}`"
+            :aria-selected="note.color === color"
+            :class="['note-color-swatch', { 'note-color-swatch--selected': note.color === color }]"
+            type="button"
+            @click="selectColor(color)"
+          >
+            <span :class="['note-color-swatch__fill', `note-color-swatch__fill--${color}`]" aria-hidden="true" />
+            <Check v-if="note.color === color" :size="14" aria-hidden="true" class="note-color-swatch__check" />
+          </button>
+        </div>
+      </div>
     </label>
 
     <label class="note-settings-header__field">
