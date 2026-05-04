@@ -26,6 +26,7 @@ const isSettingsOpen = ref(false);
 const isEditingContent = ref(false);
 const draftContent = ref('');
 const contentInputRef = ref<HTMLTextAreaElement | null>(null);
+const isDragCursorActive = ref(false);
 const dragThreshold = 6;
 let dragPointerId: number | null = null;
 let dragStartX = 0;
@@ -163,12 +164,23 @@ const startDragging = async () => {
     return;
   }
 
-  await appWindow.startDragging();
+  isDragCursorActive.value = true;
+
+  try {
+    await appWindow.startDragging();
+  } finally {
+    isDragCursorActive.value = false;
+  }
+};
+
+const clearDragPointerState = () => {
+  dragPointerId = null;
+  dragCandidate = false;
 };
 
 const clearDragState = () => {
-  dragPointerId = null;
-  dragCandidate = false;
+  clearDragPointerState();
+  isDragCursorActive.value = false;
 };
 
 const beginDragCandidate = (event: PointerEvent) => {
@@ -180,6 +192,7 @@ const beginDragCandidate = (event: PointerEvent) => {
   dragStartX = event.clientX;
   dragStartY = event.clientY;
   dragCandidate = true;
+  isDragCursorActive.value = true;
 };
 
 const onDragPointerMove = async (event: PointerEvent) => {
@@ -193,7 +206,7 @@ const onDragPointerMove = async (event: PointerEvent) => {
     return;
   }
 
-  clearDragState();
+  clearDragPointerState();
   await startDragging();
 };
 
@@ -286,7 +299,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section v-if="canRenderNote" :class="['desktop-note-window', noteClass]" @pointerdown="beginDragCandidate">
+  <section
+    v-if="canRenderNote"
+    :class="['desktop-note-window', noteClass, { 'desktop-note-window--dragging': isDragCursorActive }]"
+    @pointerdown="beginDragCandidate"
+  >
     <header class="desktop-note-window__header">
       <input
         v-if="isEditingTitle"
@@ -303,7 +320,6 @@ onBeforeUnmount(() => {
         v-else
         class="desktop-note-window__title-button"
         type="button"
-        @pointerdown.stop
         @dblclick.stop="beginTitleEdit"
       >
         {{ note.title }}
@@ -345,7 +361,6 @@ onBeforeUnmount(() => {
       v-else
       class="note-content-display"
       type="button"
-      @pointerdown.stop
       @dblclick.stop="beginContentEdit"
     >
       {{ note.content || 'Write something important...' }}

@@ -228,6 +228,11 @@ p {
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  cursor: grab;
+}
+
+.desktop-note-window--dragging {
+  cursor: grabbing;
 }
 
 .sticky-note--yellow { background: #fef08a; }
@@ -284,7 +289,7 @@ p {
 }
 
 .desktop-note-window__title-button {
-  cursor: text;
+  cursor: inherit;
 }
 
 .desktop-note-window__title-input {
@@ -406,6 +411,7 @@ p {
   text-align: left;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  cursor: inherit;
 }
 
 .resize-handle {
