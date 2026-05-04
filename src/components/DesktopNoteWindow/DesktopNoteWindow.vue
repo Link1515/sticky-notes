@@ -22,11 +22,13 @@ const canRenderNote = computed(() => notesStore.initialized && note.value !== nu
 let isApplyingWindowUpdate = false;
 const isEditingTitle = ref(false);
 const draftTitle = ref('');
-const titleInputRef = ref<HTMLInputElement | null>(null);
+const titleInputRef = ref<globalThis.HTMLInputElement | null>(null);
 const isSettingsOpen = ref(false);
+const settingsToggleRef = ref<globalThis.HTMLButtonElement | null>(null);
+const settingsPanelRef = ref<globalThis.HTMLElement | null>(null);
 const isEditingContent = ref(false);
 const draftContent = ref('');
-const contentInputRef = ref<HTMLTextAreaElement | null>(null);
+const contentInputRef = ref<globalThis.HTMLTextAreaElement | null>(null);
 const isDragCursorActive = ref(false);
 const dragThreshold = 6;
 let dragPointerId: number | null = null;
@@ -127,7 +129,7 @@ const commitContentEdit = async () => {
   await notesStore.flushSave();
 };
 
-const onTitleKeydown = (event: KeyboardEvent) => {
+const onTitleKeydown = (event: globalThis.KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault();
     void commitTitleEdit();
@@ -140,7 +142,7 @@ const onTitleKeydown = (event: KeyboardEvent) => {
   }
 };
 
-const onContentKeydown = (event: KeyboardEvent) => {
+const onContentKeydown = (event: globalThis.KeyboardEvent) => {
   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
     event.preventDefault();
     void commitContentEdit();
@@ -168,6 +170,23 @@ const hideCurrentNote = async () => {
 
 const toggleSettings = () => {
   isSettingsOpen.value = !isSettingsOpen.value;
+};
+
+const onWindowPointerDown = (event: PointerEvent) => {
+  if (!isSettingsOpen.value) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof window.Node)) {
+    return;
+  }
+
+  if (settingsToggleRef.value?.contains(target) || settingsPanelRef.value?.contains(target)) {
+    return;
+  }
+
+  isSettingsOpen.value = false;
 };
 
 const startDragging = async () => {
@@ -249,6 +268,7 @@ onMounted(async () => {
     return;
   }
 
+  window.addEventListener('pointerdown', onWindowPointerDown, true);
   window.addEventListener('pointermove', onDragPointerMove);
   window.addEventListener('pointerup', onDragPointerEnd);
   window.addEventListener('pointercancel', onDragPointerEnd);
@@ -299,6 +319,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('pointerdown', onWindowPointerDown, true);
   window.removeEventListener('pointermove', onDragPointerMove);
   window.removeEventListener('pointerup', onDragPointerEnd);
   window.removeEventListener('pointercancel', onDragPointerEnd);
@@ -336,6 +357,7 @@ onBeforeUnmount(() => {
         {{ note.title }}
       </button>
       <button
+        ref="settingsToggleRef"
         :aria-expanded="isSettingsOpen"
         aria-label="Toggle note settings"
         class="note-icon-button note-icon-button--ghost note-settings-toggle"
@@ -347,16 +369,18 @@ onBeforeUnmount(() => {
       </button>
     </header>
 
-    <StickyNoteToolbar
-      :colors="noteColors"
-      :is-open="isSettingsOpen"
-      :note="note"
-      :on-color-change="updateColor"
-      :on-delete="deleteNote"
-      :on-font-size-change="updateFontSize"
-      :on-hide="hideCurrentNote"
-      :on-pin-toggle="togglePinned"
-    />
+    <div ref="settingsPanelRef">
+      <StickyNoteToolbar
+        :colors="noteColors"
+        :is-open="isSettingsOpen"
+        :note="note"
+        :on-color-change="updateColor"
+        :on-delete="deleteNote"
+        :on-font-size-change="updateFontSize"
+        :on-hide="hideCurrentNote"
+        :on-pin-toggle="togglePinned"
+      />
+    </div>
 
     <textarea
       v-if="isEditingContent"
