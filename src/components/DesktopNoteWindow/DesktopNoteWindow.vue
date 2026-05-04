@@ -76,7 +76,7 @@ const cancelTitleEdit = () => {
   isEditingTitle.value = false;
 };
 
-const commitTitleEdit = () => {
+const commitTitleEdit = async () => {
   if (!note.value) {
     return;
   }
@@ -84,6 +84,7 @@ const commitTitleEdit = () => {
   const nextTitle = draftTitle.value.trim() || 'Untitled note';
   notesStore.updateNote(props.noteId, { title: nextTitle });
   isEditingTitle.value = false;
+  await notesStore.flushSave();
 };
 
 const beginContentEdit = async () => {
@@ -104,19 +105,20 @@ const cancelContentEdit = () => {
   isEditingContent.value = false;
 };
 
-const commitContentEdit = () => {
+const commitContentEdit = async () => {
   if (!note.value) {
     return;
   }
 
   notesStore.updateNote(props.noteId, { content: draftContent.value });
   isEditingContent.value = false;
+  await notesStore.flushSave();
 };
 
 const onTitleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault();
-    commitTitleEdit();
+    void commitTitleEdit();
     return;
   }
 
@@ -129,7 +131,7 @@ const onTitleKeydown = (event: KeyboardEvent) => {
 const onContentKeydown = (event: KeyboardEvent) => {
   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
     event.preventDefault();
-    commitContentEdit();
+    void commitContentEdit();
     return;
   }
 

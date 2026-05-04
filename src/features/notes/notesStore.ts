@@ -77,6 +77,20 @@ export const useNotesStore = defineStore('notes', {
 
       this.debouncedSave?.trigger();
     },
+    async flushSave() {
+      const settingsStore = useSettingsStore();
+
+      if (!this.debouncedSave) {
+        this.configureAutosave(settingsStore.settings.autosaveDebounceMs);
+      }
+
+      if (this.debouncedSave) {
+        await this.debouncedSave.flush();
+        return;
+      }
+
+      await this.persistNow();
+    },
     async initialize() {
       if (this.initialized) {
         return;
