@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MoveDiagonal2 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
 import { noteColors, type StickyFontSize, type StickyNote as StickyNoteModel, type StickyNoteColor } from '@/features/notes/notesTypes';
@@ -129,5 +130,9 @@ onBeforeUnmount(() => {
       placeholder="Write something important..."
       @input="notesStore.updateNote(note.id, { content: ($event.target as HTMLTextAreaElement).value })"
     />
+
+    <span aria-hidden="true" class="resize-handle resize-handle--passive">
+      <MoveDiagonal2 :size="16" />
+    </span>
   </article>
 </template>

@@ -302,24 +302,55 @@ p {
   outline: 2px solid rgba(15, 23, 42, 0.18);
 }
 
-.ghost-icon-button {
+.note-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 999px;
-  padding: 0.35rem 0.75rem;
+  padding: 0;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.note-icon-button svg {
+  flex: 0 0 auto;
+}
+
+.note-icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.note-icon-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.18);
+}
+
+.note-icon-button--ghost {
   background: rgba(255, 255, 255, 0.5);
   color: #1f2937;
 }
 
+.note-icon-button--ghost:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.note-icon-button--danger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #991b1b;
+}
+
+.note-icon-button--danger:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
 .note-settings-toggle {
   margin-left: auto;
-  min-width: 2.25rem;
-  min-height: 2.25rem;
-  border-radius: 999px;
-  padding: 0.1rem 0.75rem 0.35rem;
-  background: rgba(255, 255, 255, 0.52);
-  color: #0f172a;
-  font-size: 1.1rem;
-  font-weight: 700;
-  line-height: 1;
+  flex: 0 0 auto;
 }
 
 .drag-hint {
@@ -416,15 +447,22 @@ p {
 
 .resize-handle {
   position: absolute;
-  right: 0.3rem;
-  bottom: 0.3rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  width: 2rem;
+  height: 2rem;
   cursor: nwse-resize;
   border-radius: 0.45rem;
-  background:
-    linear-gradient(135deg, transparent 0 45%, rgba(15, 23, 42, 0.3) 45% 55%, transparent 55% 100%),
-    rgba(255, 255, 255, 0.35);
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.resize-handle.note-icon-button {
+  border-radius: 0.45rem;
+}
+
+.resize-handle--passive {
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .empty-state {
@@ -495,7 +533,7 @@ p {
   }
 
   .desktop-note-window__title,
-  .ghost-icon-button,
+  .note-icon-button--ghost,
   .drag-chip {
     color: #0f172a;
   }

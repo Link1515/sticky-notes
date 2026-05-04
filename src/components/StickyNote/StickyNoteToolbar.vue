@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { EyeOff, Trash2 } from 'lucide-vue-next';
 import type { StickyFontSize, StickyNote, StickyNoteColor } from '@/features/notes/notesTypes';
 
 defineProps<{
@@ -32,12 +33,24 @@ defineProps<{
       </select>
     </label>
 
-    <button class="ghost-button note-settings-header__action" type="button" @click="onHide">
-      Hide
+    <button
+      aria-label="Hide note"
+      class="note-icon-button note-icon-button--ghost note-settings-header__action"
+      title="Hide note"
+      type="button"
+      @click="onHide"
+    >
+      <EyeOff :size="16" aria-hidden="true" />
     </button>
 
-    <button class="danger-button note-settings-header__action" type="button" @click="onDelete">
-      Delete
+    <button
+      aria-label="Delete note"
+      class="note-icon-button note-icon-button--danger note-settings-header__action"
+      title="Delete note"
+      type="button"
+      @click="onDelete"
+    >
+      <Trash2 :size="16" aria-hidden="true" />
     </button>
   </section>
 </template>

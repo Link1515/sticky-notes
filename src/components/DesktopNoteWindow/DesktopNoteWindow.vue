@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Ellipsis, MoveDiagonal2 } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
@@ -327,12 +328,12 @@ onBeforeUnmount(() => {
       <button
         :aria-expanded="isSettingsOpen"
         aria-label="Toggle note settings"
-        class="note-settings-toggle"
+        class="note-icon-button note-icon-button--ghost note-settings-toggle"
         type="button"
         @pointerdown.stop
         @click.stop="toggleSettings"
       >
-        ...
+        <Ellipsis :size="18" aria-hidden="true" />
       </button>
     </header>
 
@@ -366,7 +367,15 @@ onBeforeUnmount(() => {
       {{ note.content || 'Write something important...' }}
     </button>
 
-    <button class="resize-handle" type="button" @pointerdown.prevent="startResizeDragging" />
+    <button
+      aria-label="Resize note"
+      class="resize-handle note-icon-button note-icon-button--ghost"
+      title="Resize note"
+      type="button"
+      @pointerdown.prevent="startResizeDragging"
+    >
+      <MoveDiagonal2 :size="16" aria-hidden="true" />
+    </button>
   </section>
 
   <main v-else-if="notesStore.initialized" class="note-missing">
