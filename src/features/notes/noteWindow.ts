@@ -1,11 +1,10 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { availableMonitors, LogicalPosition, LogicalSize, primaryMonitor } from '@tauri-apps/api/window';
+import { minimumNoteHeight, minimumNoteWidth } from '@/features/notes/noteLayout';
 import type { StickyNote } from '@/features/notes/notesTypes';
 
 export const mainWindowLabel = 'main';
 const noteWindowPrefix = 'note-';
-const minimumNoteWidth = 220;
-const minimumNoteHeight = 180;
 
 export const isTauriRuntime = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 export const getNoteWindowLabel = (noteId: string) => `${noteWindowPrefix}${noteId}`;
@@ -82,7 +81,9 @@ const clampToDesktopWorkArea = async (note: StickyNote) => {
 
 const updateWindowBounds = async (windowHandle: WebviewWindow, note: StickyNote, focus: boolean) => {
   const normalized = await clampToDesktopWorkArea(note);
+  const minimumSize = new LogicalSize(minimumNoteWidth, minimumNoteHeight);
 
+  await windowHandle.setMinSize(minimumSize);
   await windowHandle.setPosition(new LogicalPosition(normalized.x, normalized.y));
   await windowHandle.setSize(
     new LogicalSize(

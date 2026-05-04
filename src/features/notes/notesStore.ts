@@ -5,6 +5,7 @@ import { createId } from '@/lib/ids';
 import { loadNotesState, persistNotesState } from '@/features/notes/notesPersistence';
 import { closeNoteWindow, ensureNoteWindowVisible, hideNoteWindow, focusNoteWindow, setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { emitNotesChanged } from '@/features/notes/notesEvents';
+import { minimumNoteHeight, minimumNoteWidth } from '@/features/notes/noteLayout';
 import type { StickyNote, StickyNoteColor, StickyFontSize } from '@/features/notes/notesTypes';
 import { useSettingsStore } from '@/features/settings/settingsStore';
 
@@ -185,11 +186,9 @@ export const useNotesStore = defineStore('notes', {
         return;
       }
 
-      const minWidth = 220;
-      const minHeight = 180;
       this.touchNote(note, {
-        width: Math.max(Math.round(width), minWidth),
-        height: Math.max(Math.round(height), minHeight),
+        width: Math.max(Math.round(width), minimumNoteWidth),
+        height: Math.max(Math.round(height), minimumNoteHeight),
       });
       this.scheduleSave();
     },

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Ellipsis, MoveDiagonal2 } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
+import { minimumNoteHeight, minimumNoteWidth, noteLayoutCssVars } from '@/features/notes/noteLayout';
 import { listenForNotesChanged } from '@/features/notes/notesEvents';
 import { closeNoteWindow, ensureNoteWindowVisible, focusNoteWindow, isTauriRuntime, setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { useNotesStore } from '@/features/notes/notesStore';
@@ -16,6 +17,7 @@ const notesStore = useNotesStore();
 const appWindow = getCurrentWindow();
 const note = computed(() => notesStore.notes.find((entry) => entry.id === props.noteId && !entry.deletedAt) ?? null);
 const noteClass = computed(() => (note.value ? `sticky-note--${note.value.color} sticky-note--${note.value.fontSize}` : 'sticky-note--yellow sticky-note--md'));
+const noteWindowStyle = noteLayoutCssVars;
 
 const unlistenFns: Array<() => void> = [];
 const canRenderNote = computed(() => notesStore.initialized && note.value !== null);
@@ -268,6 +270,19 @@ onMounted(async () => {
     return;
   }
 
+  await appWindow.setMinSize(new LogicalSize(minimumNoteWidth, minimumNoteHeight));
+
+  const [scaleFactor, size] = await Promise.all([
+    appWindow.scaleFactor(),
+    appWindow.innerSize(),
+  ]);
+  const logicalSize = size.toLogical(scaleFactor);
+  if (logicalSize.width < minimumNoteWidth) {
+    await appWindow.setSize(
+      new LogicalSize(minimumNoteWidth, Math.max(logicalSize.height, minimumNoteHeight)),
+    );
+  }
+
   window.addEventListener('pointerdown', onWindowPointerDown, true);
   window.addEventListener('pointermove', onDragPointerMove);
   window.addEventListener('pointerup', onDragPointerEnd);
@@ -334,6 +349,7 @@ onBeforeUnmount(() => {
   <section
     v-if="canRenderNote"
     :class="['desktop-note-window', noteClass, { 'desktop-note-window--dragging': isDragCursorActive }]"
+    :style="noteWindowStyle"
     @pointerdown="beginDragCandidate"
   >
     <header class="desktop-note-window__header">

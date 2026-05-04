@@ -2,6 +2,7 @@
 import { MoveDiagonal2 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import StickyNoteToolbar from '@/components/StickyNote/StickyNoteToolbar.vue';
+import { noteLayoutCssVars } from '@/features/notes/noteLayout';
 import { setNoteWindowPinned } from '@/features/notes/noteWindow';
 import { noteColors, type StickyFontSize, type StickyNote as StickyNoteModel, type StickyNoteColor } from '@/features/notes/notesTypes';
 import { useNotesStore } from '@/features/notes/notesStore';
@@ -19,6 +20,7 @@ const noteStyle = computed(() => ({
   width: `${props.note.width}px`,
   height: `${props.note.height}px`,
   zIndex: String(props.note.zIndex),
+  ...noteLayoutCssVars,
 }));
 
 const dragState = {

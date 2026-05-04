@@ -208,12 +208,13 @@ p {
   position: absolute;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  min-width: 220px;
-  min-height: 180px;
+  min-width: var(--note-min-width, 320px);
+  min-height: var(--note-min-height, 180px);
   padding: 0.75rem;
   border-radius: 1rem;
   resize: both;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .desktop-note-window {
@@ -222,8 +223,8 @@ p {
   grid-template-rows: auto auto 1fr;
   width: 100vw;
   height: 100vh;
-  min-width: 220px;
-  min-height: 180px;
+  min-width: var(--note-min-width, 320px);
+  min-height: var(--note-min-height, 180px);
   padding: 0.75rem;
   border-radius: 1rem;
   overflow: hidden;
@@ -382,7 +383,7 @@ p {
 
 .note-settings-header__field {
   display: grid;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   gap: 0.35rem;
 }
 

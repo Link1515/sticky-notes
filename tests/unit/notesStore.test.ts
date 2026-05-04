@@ -1,5 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { minimumNoteHeight, minimumNoteWidth } from '@/features/notes/noteLayout';
 import { createNoteModel, useNotesStore } from '@/features/notes/notesStore';
 import { clampNoteToViewport } from '@/lib/screenBounds';
 import { mergeSettings, migratePersistedState } from '@/features/notes/notesPersistence';
@@ -75,6 +76,17 @@ describe('notes domain', () => {
     await store.toggleNotePinned(store.notes[0].id);
 
     expect(store.notes[0].isPinned).toBe(true);
+  });
+
+  it('clamps note size updates to the shared minimum dimensions', () => {
+    const store = useNotesStore();
+    const note = createNoteModel('yellow', 260, 220, 1);
+    store.notes = [note];
+
+    store.updateNoteSize(note.id, minimumNoteWidth - 64, minimumNoteHeight - 32);
+
+    expect(store.notes[0].width).toBe(minimumNoteWidth);
+    expect(store.notes[0].height).toBe(minimumNoteHeight);
   });
 
   it('clamps a note back into the viewport', () => {
