@@ -236,9 +236,12 @@ p {
 .sticky-note--sky { background: #bae6fd; }
 .sticky-note--lavender { background: #ddd6fe; }
 
-.sticky-note--sm .note-editor { font-size: 0.95rem; }
-.sticky-note--md .note-editor { font-size: 1rem; }
-.sticky-note--lg .note-editor { font-size: 1.1rem; }
+.sticky-note--sm .note-editor,
+.sticky-note--sm .note-content-display { font-size: 0.95rem; }
+.sticky-note--md .note-editor,
+.sticky-note--md .note-content-display { font-size: 1rem; }
+.sticky-note--lg .note-editor,
+.sticky-note--lg .note-content-display { font-size: 1.1rem; }
 
 .note-header {
   display: flex;
@@ -389,6 +392,9 @@ p {
 
 .note-content-display {
   grid-row: 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
   width: 100%;
   height: 100%;
   min-height: 0;
