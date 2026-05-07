@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:tauri-safe": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$targetDir = Join-Path $env:TEMP 'sticky-notes-target-dev'; $env:CARGO_TARGET_DIR = $targetDir; $env:CARGO_INCREMENTAL='0'; $env:RUSTFLAGS='-C codegen-units=1'; $env:CARGO_BUILD_JOBS='1'; pnpm tauri dev\"",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
